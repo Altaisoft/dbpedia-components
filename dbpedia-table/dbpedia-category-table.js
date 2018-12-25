@@ -18,35 +18,49 @@ select ?resource ?label ?link ?thumbnail where {
 } ORDER BY ?label limit 5
 `
 
-var url = new URL('https://dbpedia.org/sparql'),
-    params = {
-        'query': query,
-        'default-graph-uri': 'http://dbpedia.org',
-        'format': 'application/sparql-results+json'
-    };
-
-Object.keys(params).forEach(
-    key => url.searchParams.append(key, params[key])
-)
-
-fetch(url).then(function(response) {
-    response.json().then(function(data) {
-        var items = data.results.bindings.map(function(item) { return {
-            label: item.label.value,
-            href: item.link.value,
-        }});
-        console.log(items);
-
-        var table = new Tabulator("#table", {
+$(function() {
+    var table = new Tabulator("#table", {
             height: 300,
-            data: items, //assign data to table
-            layout: "fitColumns", //fit columns to width of table (optional)
-            columns: [ //Define Table Columns
+            layout: "fitColumns",
+            columns: [
                 {title: "Page", field: "label"},
             ],
+
+            // paginationSize: 20,
+            // ajaxProgressiveLoad: "scroll",
+
+            ajaxURL: 'https://dbpedia.org/sparql',
+            ajaxConfig: {
+                credentials: 'omit',
+                method: 'get'
+            },
+
+            ajaxURLGenerator: function(url, config, params) {
+                var url = new URL(url),
+                    params = {
+                        'query': query,
+                        'default-graph-uri': 'http://dbpedia.org',
+                        'format': 'application/sparql-results+json'
+                    };
+
+                Object.keys(params).forEach(
+                    key => url.searchParams.append(key, params[key])
+                )
+
+                return url
+            },
+
+            ajaxResponse: function(url, params, response) {
+                return response.results.bindings.map(function(item) {
+                    return {
+                        href: item.link.value,
+                        label: item.label.value
+                    }
+                })
+            },
+
             rowClick: function(e, row) {
                 window.open(row._row.data.href)
             }
         });
-    })
 });
