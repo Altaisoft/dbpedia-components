@@ -7,7 +7,6 @@ PREFIX dct: <http://purl.org/dc/terms/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 
-
 select ?resource ?label ?link ?thumbnail where {
     ?resource dct:subject dbc:Battles_of_World_War_I_involving_Germany .
     ?resource rdfs:label ?label .
@@ -15,7 +14,7 @@ select ?resource ?label ?link ?thumbnail where {
     ?resource dbo:thumbnail ?thumbnail .
     
     FILTER (lang(?label) = 'en') .
-} ORDER BY ?label limit 5
+} ORDER BY ?label limit 20
 `
 
 $(function() {
@@ -32,7 +31,10 @@ $(function() {
             ajaxURL: 'https://dbpedia.org/sparql',
             ajaxConfig: {
                 credentials: 'omit',
-                method: 'get'
+                method: 'get',
+                headers: {
+                    'Accept': 'application/sparql-results+json'
+                }
             },
 
             ajaxURLGenerator: function(url, config, params) {
@@ -46,6 +48,8 @@ $(function() {
                 Object.keys(params).forEach(
                     key => url.searchParams.append(key, params[key])
                 )
+
+                console.log(url)
 
                 return url
             },
