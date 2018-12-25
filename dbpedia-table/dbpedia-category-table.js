@@ -14,7 +14,7 @@ select ?resource ?label ?link ?thumbnail where {
     ?resource dbo:thumbnail ?thumbnail .
     
     FILTER (lang(?label) = 'en') .
-} ORDER BY ?label limit 20
+} ORDER BY ?label
 `
 
 $(function() {
@@ -25,8 +25,8 @@ $(function() {
                 {title: "Page", field: "label"},
             ],
 
-            // paginationSize: 20,
-            // ajaxProgressiveLoad: "scroll",
+            pagination: 'local',
+            pageSize: 20,
 
             ajaxURL: 'https://dbpedia.org/sparql',
             ajaxConfig: {
