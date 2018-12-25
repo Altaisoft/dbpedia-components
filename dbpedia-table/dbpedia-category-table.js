@@ -49,8 +49,6 @@ $(function() {
                     key => url.searchParams.append(key, params[key])
                 )
 
-                console.log(url)
-
                 return url
             },
 
