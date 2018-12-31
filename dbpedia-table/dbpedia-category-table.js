@@ -18,6 +18,8 @@ select ?resource ?label ?link ?thumbnail where {
 `
 
 $(function() {
+    return;
+    
     var table = new Tabulator("#table", {
             height: 300,
             layout: "fitColumns",
@@ -25,8 +27,8 @@ $(function() {
                 {title: "Page", field: "label"},
             ],
 
-            pagination: 'local',
-            pageSize: 20,
+            // pagination: 'local',
+            // pageSize: 20,
 
             ajaxURL: 'https://dbpedia.org/sparql',
             ajaxConfig: {
