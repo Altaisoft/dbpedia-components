@@ -65,7 +65,7 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 
 select ?resource ?label ?link ?thumbnail where {
-    ?resource dct:subject dbc:Battles_of_World_War_I_involving_Germany .
+    ?resource dct:subject dbc:{category} .
     ?resource rdfs:label ?label .
     ?resource foaf:isPrimaryTopicOf ?link .
     ?resource dbo:thumbnail ?thumbnail .
@@ -76,7 +76,7 @@ select ?resource ?label ?link ?thumbnail where {
 
       var $container = $(shadow).find('#table')[0];
       
-      var table = new Tabulator($container, {
+      self.tabulator = new Tabulator($container, {
         height: 300,
         layout: "fitColumns",
         columns: [
@@ -95,7 +95,7 @@ select ?resource ?label ?link ?thumbnail where {
         ajaxURLGenerator: function(url, config, params) {
             var url = new URL(url),
                 params = {
-                    'query': query,
+                    'query': query.replace('{category}', self.category),
                     'default-graph-uri': 'http://dbpedia.org',
                     'format': 'application/sparql-results+json'
                 };
@@ -128,25 +128,24 @@ select ?resource ?label ?link ?thumbnail where {
 
   attributeChangedCallback(name, oldValue, newValue) {
     // name will always be "country" due to observedAttributes
-    this._countryCode = newValue;
+    this._category = newValue;
     this._updateRendering();
   }
   connectedCallback() {
     this._updateRendering();
   }
 
-  get country() {
-    return this._countryCode;
+  get category() {
+    return this._category;
   }
-  set country(v) {
-    this.setAttribute("country", v);
+  set category(v) {
+    this.setAttribute("category", v);
   }
 
   _updateRendering() {
-    // Left as an exercise for the reader. But, you'll probably want to
-    // check this.ownerDocument.defaultView to see if we've been
-    // inserted into a document with a browsing context, and avoid
-    // doing any work if not.
+    if (this.tabulator) {
+      this.tabulator.setData();
+    }
   }
 }
 
