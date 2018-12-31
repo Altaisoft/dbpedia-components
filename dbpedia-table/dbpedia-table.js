@@ -154,11 +154,4 @@ select ?resource ?label ?link where {
 }
 
 
-window.onload = function() {
-  document.getElementsByTagName('select')[0].onchange = function() {
-    document.getElementsByTagName('wikipedia-table')[0].category = this.value;
-  }
-}
-
-
 customElements.define("wikipedia-table", WikipediaTable);
