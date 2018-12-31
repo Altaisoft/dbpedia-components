@@ -18,71 +18,113 @@ class WikipediaTable extends HTMLElement {
     stylesheet.setAttribute('rel', 'stylesheet');
     stylesheet.setAttribute('href', 'https://unpkg.com/tabulator-tables@4.1.4/dist/css/tabulator.min.css');
 
-    // Take attribute content and put it inside the info span
-    const text = this.getAttribute('data-text');
+    const jquery = document.createElement('script');
     
+    var self = this;
+    jquery.onload = function() {
+      self._is_jquery_loaded = true;
 
-    // Create some CSS to apply to the shadow dom
-    const style = document.createElement('style');
-    console.log(style.isConnected);
+      create_table();
+    }
 
-    // Attach the created elements to the shadow dom
-    shadow.appendChild(style);
+    jquery.setAttribute('type', 'text/javascript');
+    jquery.setAttribute('src', 'https://code.jquery.com/jquery-3.3.1.min.js');
+
+    const tabulator = document.createElement('script');
+    tabulator.onload = function() {
+      self._is_tabulator_loaded = true;
+
+      create_table();
+    }
+
+    tabulator.setAttribute('type', 'text/javascript');
+    tabulator.setAttribute('src', 'https://unpkg.com/tabulator-tables@4.1.4/dist/js/tabulator.min.js');
+
+    // Take attribute content and put it inside the info span
+    const category = this.getAttribute('category');
+    
     shadow.appendChild(stylesheet);
-    console.log(style.isConnected);
+    shadow.appendChild(jquery);
+    shadow.appendChild(tabulator);
+    
     shadow.appendChild(wrapper);
     wrapper.appendChild(container);
-    
 
-    var $container = $(shadow).find('#table')[0];
-    
-    var table = new Tabulator($container, {
-      height: 300,
-      layout: "fitColumns",
-      columns: [
-          {title: "Page", field: "label"},
-      ],
-
-      ajaxURL: 'https://dbpedia.org/sparql',
-      ajaxConfig: {
-          credentials: 'omit',
-          method: 'get',
-          headers: {
-              'Accept': 'application/sparql-results+json'
-          }
-      },
-
-      ajaxURLGenerator: function(url, config, params) {
-          var url = new URL(url),
-              params = {
-                  'query': query,
-                  'default-graph-uri': 'http://dbpedia.org',
-                  'format': 'application/sparql-results+json'
-              };
-
-          Object.keys(params).forEach(
-              key => url.searchParams.append(key, params[key])
-          )
-
-          return url
-      },
-
-      ajaxResponse: function(url, params, response) {
-          return response.results.bindings.map(function(item) {
-              return {
-                  href: item.link.value,
-                  label: item.label.value
-              }
-          })
-      },
-
-      rowClick: function(e, row) {
-          window.open(row._row.data.href)
+    function create_table() {
+      if (!(self._is_jquery_loaded && self._is_tabulator_loaded)) {
+        return;
       }
-    });
+
+      var query = `
+PREFIX : <http://iolanta.tech/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbc: <http://dbpedia.org/resource/Category:>
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+select ?resource ?label ?link ?thumbnail where {
+    ?resource dct:subject dbc:Battles_of_World_War_I_involving_Germany .
+    ?resource rdfs:label ?label .
+    ?resource foaf:isPrimaryTopicOf ?link .
+    ?resource dbo:thumbnail ?thumbnail .
+    
+    FILTER (lang(?label) = 'en') .
+} ORDER BY ?label
+`
+
+      var $container = $(shadow).find('#table')[0];
+      
+      var table = new Tabulator($container, {
+        height: 300,
+        layout: "fitColumns",
+        columns: [
+            {title: "Page", field: "label"},
+        ],
+
+        ajaxURL: 'https://dbpedia.org/sparql',
+        ajaxConfig: {
+            credentials: 'omit',
+            method: 'get',
+            headers: {
+                'Accept': 'application/sparql-results+json'
+            }
+        },
+
+        ajaxURLGenerator: function(url, config, params) {
+            var url = new URL(url),
+                params = {
+                    'query': query,
+                    'default-graph-uri': 'http://dbpedia.org',
+                    'format': 'application/sparql-results+json'
+                };
+
+            Object.keys(params).forEach(
+                key => url.searchParams.append(key, params[key])
+            )
+
+            return url
+        },
+
+        ajaxResponse: function(url, params, response) {
+            return response.results.bindings.map(function(item) {
+                return {
+                    href: item.link.value,
+                    label: item.label.value
+                }
+            })
+        },
+
+        rowClick: function(e, row) {
+            window.open(row._row.data.href)
+        }
+      });
+    }
+    
   }
 
-  static get observedAttributes() { return ["country"]; }
+  static get observedAttributes() { return ["category"]; }
 
   attributeChangedCallback(name, oldValue, newValue) {
     // name will always be "country" due to observedAttributes
