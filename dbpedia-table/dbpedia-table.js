@@ -55,7 +55,7 @@ class WikipediaTable extends HTMLElement {
         return;
       }
 
-      var query = `
+      var query_template = `
 PREFIX : <http://iolanta.tech/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX dbo: <http://dbpedia.org/ontology/>
@@ -64,11 +64,11 @@ PREFIX dct: <http://purl.org/dc/terms/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 
-select ?resource ?label ?link ?thumbnail where {
+select ?resource ?label ?link where {
     ?resource dct:subject dbc:{category} .
     ?resource rdfs:label ?label .
     ?resource foaf:isPrimaryTopicOf ?link .
-    ?resource dbo:thumbnail ?thumbnail .
+    # ?resource dbo:thumbnail ?thumbnail .
     
     FILTER (lang(?label) = 'en') .
 } ORDER BY ?label
@@ -93,9 +93,13 @@ select ?resource ?label ?link ?thumbnail where {
         },
 
         ajaxURLGenerator: function(url, config, params) {
-            var url = new URL(url),
+            var query = query_template.replace(
+                  '{category}',
+                  self.category.replace(/ /g, '_')
+                ),
+                url = new URL(url),
                 params = {
-                    'query': query.replace('{category}', self.category),
+                    'query': query,
                     'default-graph-uri': 'http://dbpedia.org',
                     'format': 'application/sparql-results+json'
                 };
@@ -146,6 +150,13 @@ select ?resource ?label ?link ?thumbnail where {
     if (this.tabulator) {
       this.tabulator.setData();
     }
+  }
+}
+
+
+window.onload = function() {
+  document.getElementsByTagName('select')[0].onchange = function() {
+    document.getElementsByTagName('wikipedia-table')[0].category = this.value;
   }
 }
 
