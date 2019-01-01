@@ -29,34 +29,39 @@ select ?resource ?label ?link where {
     wrapper.setAttribute('class', 'wrapper');
 
     const container = document.createElement('div');
-    container.setAttribute('id', 'table');
-    container.setAttribute('tabindex', 0);
+    // Thanks to https://stackoverflow.com/a/49587260/1245471
+    Object.assign(container, {
+      id: 'table',
+      tabindex: 0
+    })
 
     const stylesheet = document.createElement('link');
-    stylesheet.setAttribute('rel', 'stylesheet');
-    stylesheet.setAttribute('href', 'https://unpkg.com/tabulator-tables@4.1.4/dist/css/tabulator.min.css');
-
-    const jquery = document.createElement('script');
+    Object.assign(stylesheet, {
+      rel: 'stylesheet',
+      href: 'https://unpkg.com/tabulator-tables@4.1.4/dist/css/tabulator.min.css'
+    })
     
     var self = this;
-    jquery.onload = function() {
-      self._is_jquery_loaded = true;
 
-      create_table();
-    }
-
-    jquery.setAttribute('type', 'text/javascript');
-    jquery.setAttribute('src', 'https://code.jquery.com/jquery-3.3.1.min.js');
+    const jquery = document.createElement('script');
+    Object.assign(jquery, {
+      type: 'text/javascript',
+      src: 'https://code.jquery.com/jquery-3.3.1.min.js',
+      onload: function() {
+        self._is_jquery_loaded = true;
+        create_table();
+      }
+    })
 
     const tabulator = document.createElement('script');
-    tabulator.onload = function() {
-      self._is_tabulator_loaded = true;
-
-      create_table();
-    }
-
-    tabulator.setAttribute('type', 'text/javascript');
-    tabulator.setAttribute('src', 'https://unpkg.com/tabulator-tables@4.1.4/dist/js/tabulator.min.js');
+    Object.assign(tabulator, {
+      type: 'text/javascript',
+      src: 'https://unpkg.com/tabulator-tables@4.1.4/dist/js/tabulator.min.js',
+      onload: function() {
+        self._is_tabulator_loaded = true;
+        create_table();
+      }
+    })
 
     // Take attribute content and put it inside the info span
     const category = this.getAttribute('category');
