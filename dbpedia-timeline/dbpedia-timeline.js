@@ -150,8 +150,9 @@ class WikipediaTimeline extends HTMLElement {
         var self = this;
         fetch(url, config).then(function(response) {
             response.json().then(function(data) {
-                console.log(data)
                 var items = self.process_response(data);
+
+                self.timeline_dataset = items;
 
                 if (self.timeline) {
                     self.timeline.setItems(items);
@@ -168,6 +169,17 @@ class WikipediaTimeline extends HTMLElement {
             this.container,
             data, {}
         );
+
+        var self = this;
+        this.timeline.on('click', function(event) {
+            if (!(event.item)) {
+                return;
+            }
+
+            var element = self.timeline_dataset.get(event.item);
+
+            window.open(element.href);
+        });
     }
 
   static get observedAttributes() { return ["category"]; }
