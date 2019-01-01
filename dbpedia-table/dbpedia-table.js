@@ -1,10 +1,28 @@
 class WikipediaTable extends HTMLElement {
   constructor() {
     super();
-    this._countryCode = null;
+    this.query_template = `
+PREFIX : <http://iolanta.tech/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbc: <http://dbpedia.org/resource/Category:>
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+select ?resource ?label ?link where {
+    ?resource dct:subject dbc:{category} .
+    ?resource rdfs:label ?label .
+    ?resource foaf:isPrimaryTopicOf ?link .
+    
+    FILTER (lang(?label) = 'en') .
+} ORDER BY ?label
+`;
+
+    this._category = null;
 
     // Create a shadow root
-    const shadow = this.attachShadow({mode: 'open'});
+    const shadow = this.attachShadow({mode: 'closed'});
 
     // Create spans
     const wrapper = document.createElement('span');
@@ -55,25 +73,6 @@ class WikipediaTable extends HTMLElement {
         return;
       }
 
-      var query_template = `
-PREFIX : <http://iolanta.tech/>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX dbo: <http://dbpedia.org/ontology/>
-PREFIX dbc: <http://dbpedia.org/resource/Category:>
-PREFIX dct: <http://purl.org/dc/terms/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-
-select ?resource ?label ?link where {
-    ?resource dct:subject dbc:{category} .
-    ?resource rdfs:label ?label .
-    ?resource foaf:isPrimaryTopicOf ?link .
-    # ?resource dbo:thumbnail ?thumbnail .
-    
-    FILTER (lang(?label) = 'en') .
-} ORDER BY ?label
-`
-
       var $container = $(shadow).find('#table')[0];
       
       self.tabulator = new Tabulator($container, {
@@ -93,7 +92,7 @@ select ?resource ?label ?link where {
         },
 
         ajaxURLGenerator: function(url, config, params) {
-            var query = query_template.replace(
+            var query = self.query_template.replace(
                   '{category}',
                   self.category.replace(/ /g, '_')
                 ),
@@ -131,7 +130,7 @@ select ?resource ?label ?link where {
   static get observedAttributes() { return ["category"]; }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    // name will always be "country" due to observedAttributes
+    // name will always be "category" due to observedAttributes
     this._category = newValue;
     this._updateRendering();
   }
