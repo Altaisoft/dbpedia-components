@@ -106,7 +106,7 @@ class WikipediaTimeline extends HTMLElement {
     url() {
         // Generate the URL to SPARQL endpoint.
         var category = this.category,
-            url = new URL('http://dbpedia.org/sparql'),
+            url = new URL('https://dbpedia.org/sparql'),
             params = {
                 'default-graph-uri': 'http://dbpedia.org',
                 'format': 'application/sparql-results+json',
